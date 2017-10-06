@@ -60,10 +60,32 @@ SOURCE_DTYPE = {
 
 USECOLS = [0, 1, 2, 3, 4, 5]
 
+FORMATS = ['%i', '%1.18e', '%1.18e', '%1.18e', '%1.18e', '%1.18e', '%1.18e']
+
 
 # =============================================================================
 # MAIN
 # =============================================================================
+
+def add_columns(arr, extra_cols, append=False):
+    """Add extra columns to the output of beamc"""
+
+    dtype = (
+        [(k, v.dtype) for k, v in extra_cols] +
+        [(n, f) for n, f in arr.dtype.descr])
+
+    extra_cols = dict(extra_cols)
+
+    # create an empty array and copy the values
+    data = np.empty(len(arr), dtype=dtype)
+    for name in data.dtype.names:
+        if name in extra_cols:
+            data[name] = extra_cols[name]
+        else:
+            data[name] = arr[name]
+
+    return data
+
 
 def read_bm(fp):
     logger.info("- Reading {}...".format(fp))
@@ -74,12 +96,10 @@ def read_bm(fp):
         usecols=USECOLS)
     if arr.ndim == 0:
         arr = arr.flatten()
-    flt = (arr["ra_k"] > -9999.0)
-    filtered = arr[flt]
 
-    logger.info("Found {}/{} valid sources".format(len(arr), len(filtered)))
-
-    return filtered
+    arr = add_columns(arr, [("idx", np.arange(len(arr)))])
+    logger.info("Found {} sources".format(len(arr)))
+    return arr
 
 
 def match(bm0_ra, bm0_dec, bm1_ra, bm1_dec, radius=DEFAULT_RADIUS):
@@ -182,7 +202,7 @@ def _main(argv):
     # writing output
     logger.info("[OUTPUT]")
     logger.info("- Wrinting '{}'...".format(args.output.name))
-    np.savetxt(args.output, diff)
+    np.savetxt(args.output, diff, fmt=FORMATS)
 
 
 if __name__ == "__main__":
