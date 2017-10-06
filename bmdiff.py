@@ -18,11 +18,8 @@ __version__ = "0.0.1"
 # =============================================================================
 
 import sys
-import os
 import argparse
 import logging
-import copy
-import uuid
 import warnings
 
 import numpy as np
@@ -75,6 +72,8 @@ def read_bm(fp):
         fp, skip_header=EPOCHS,
         dtype=SOURCE_DTYPE,
         usecols=USECOLS)
+    if arr.ndim == 0:
+        arr = arr.flatten()
     flt = (arr["ra_k"] > -9999.0)
     filtered = arr[flt]
 
@@ -84,8 +83,7 @@ def read_bm(fp):
 
 
 def match(bm0_ra, bm0_dec, bm1_ra, bm1_dec, radius=DEFAULT_RADIUS):
-    logger.info("- Matching max distance of...".format(radius))
-
+    logger.info("- Matching max distance of radius {}...".format(radius))
     nearestind_bm1, distance_bm1, match_bm1 = coords.match_coords(
         bm0_ra, bm0_dec, bm1_ra, bm1_dec, eps=radius, mode="nearest")
 
@@ -103,24 +101,25 @@ def difference(ibm, flts, radius=DEFAULT_RADIUS, band="k"):
     ra, dec = "ra_{}".format(band), "dec_{}".format(band)
 
     to_remove = None
+    logger.info("[MATCH]")
     for flt in flts:
+
         matches = np.fromiter(
             match(ibm[ra], ibm[dec], flt[ra], flt[dec], radius=radius),
             dtype=[("idx_ibm", int), ("idx_flt", int)])
+        logger.info("Found {} sources matches".format(len(matches)))
+
         if to_remove is None:
             to_remove = matches["idx_ibm"]
         else:
-            import ipdb; ipdb.set_trace()
+            to_remove = np.append(to_remove, matches["idx_ibm"])
 
+    logger.info("[FILTERING]")
+    uto_remove = np.unique(to_remove)
+    logger.info("{} unique sources to remove".format(len(uto_remove)))
 
-    #~ remove_bm0 = np.unique(matches["idx_bm0"])
-    #~ remove_bm1 = np.unique(matches["idx_bm1"])
-
-    #~ np.concat
-
-
-        import ipdb; ipdb.set_trace()
-
+    clean_mask = ~np.in1d(np.arange(len(ibm)), uto_remove)
+    return ibm[clean_mask]
 
 
 # =============================================================================
@@ -150,7 +149,7 @@ def _get_parser():
 
     parser.add_argument(
         '--output', '-o', dest='output', action='store',
-        type=argparse.FileType('w'), metavar="PATH",
+        type=argparse.FileType('w'), metavar="PATH", required=True,
         help='Destination of your difference')
 
     parser.add_argument(
@@ -180,6 +179,10 @@ def _main(argv):
     # make difference
     diff = difference(inputbm, filters, radius=args.radius, band=args.band)
 
+    # writing output
+    logger.info("[OUTPUT]")
+    logger.info("- Wrinting '{}'...".format(args.output.name))
+    np.savetxt(args.output, diff)
 
 
 if __name__ == "__main__":
