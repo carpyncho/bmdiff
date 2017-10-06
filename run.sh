@@ -1,1 +1,1 @@
-python bmdiff.py data/bm0.dat --filters "data/bm1.dat"
+python bmdiff.py data/ibm.dat --filters data/flt0.dat data/flt1.dat

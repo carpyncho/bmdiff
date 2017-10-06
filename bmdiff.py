@@ -99,12 +99,18 @@ def match(bm0_ra, bm0_dec, bm1_ra, bm1_dec, radius=DEFAULT_RADIUS):
                 yield idx_bm0, idx_bm1
 
 
-def difference(ibm, fltbm, radius=DEFAULT_RADIUS, band="k"):
+def difference(ibm, flts, radius=DEFAULT_RADIUS, band="k"):
     ra, dec = "ra_{}".format(band), "dec_{}".format(band)
 
-    #~ matches = np.fromiter(
-        #~ match(bm0[ra], bm0[dec], bm1[ra], bm1[dec], radius=radius),
-        #~ dtype=[("idx_bm0", int), ("idx_bm1", int)])
+    to_remove = None
+    for flt in flts:
+        matches = np.fromiter(
+            match(ibm[ra], ibm[dec], flt[ra], flt[dec], radius=radius),
+            dtype=[("idx_ibm", int), ("idx_flt", int)])
+        if to_remove is None:
+            to_remove = matches["idx_ibm"]
+        else:
+            import ipdb; ipdb.set_trace()
 
 
     #~ remove_bm0 = np.unique(matches["idx_bm0"])
@@ -113,7 +119,7 @@ def difference(ibm, fltbm, radius=DEFAULT_RADIUS, band="k"):
     #~ np.concat
 
 
-    import ipdb; ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
 
 
 
@@ -130,8 +136,9 @@ def _get_parser():
 
     parser.add_argument(
         '--filters', "-f", dest="filters", action='store', required=True,
-        metavar="BAND-MERGE", nargs="?",
-        help='Band-Merge file with the list of sources to be removed from input')
+        metavar="BAND-MERGE", nargs="+", help=(
+            'Band-Merge file with the list of sources '
+            'to be removed from input'))
 
     parser.add_argument(
         "--band", "-b", dest="band", action="store",
@@ -159,7 +166,7 @@ def _main(argv):
     # parse the arguments
     parser = _get_parser()
     args = parser.parse_args(argv)
-    import ipdb; ipdb.set_trace()
+
     # extract and post-process the input data
     logger.setLevel(args.loglevel)
 
