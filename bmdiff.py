@@ -87,7 +87,7 @@ def add_columns(arr, extra_cols, append=False):
     return data
 
 
-def read_bm(fp):
+def read_bm(fp, band="k"):
     logger.info("- Reading {}...".format(fp))
 
     arr = np.genfromtxt(
@@ -98,7 +98,8 @@ def read_bm(fp):
         arr = arr.flatten()
     indexed = add_columns(arr, [("idx", np.arange(len(arr)))])
 
-    flt = (indexed["ra_k"] != -9999.0)
+    ra = "ra_{}".format(band)
+    flt = (indexed[ra] != -9999.0)
     filtered = indexed[flt]
 
     logger.info("Found {}/{} valid sources".format(len(filtered), len(arr)))
@@ -194,10 +195,10 @@ def _main(argv):
 
     # read the input
     logger.info("[INPUT]")
-    inputbm = read_bm(args.input)
+    inputbm = read_bm(args.input, args.band)
 
     logger.info("[FILTERS]")
-    filters = map(read_bm, args.filters)
+    filters = [read_bm(flt, band=args.band) for flt in args.filters]
 
     # make difference
     diff = difference(inputbm, filters, radius=args.radius, band=args.band)
