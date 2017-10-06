@@ -96,10 +96,13 @@ def read_bm(fp):
         usecols=USECOLS)
     if arr.ndim == 0:
         arr = arr.flatten()
+    indexed = add_columns(arr, [("idx", np.arange(len(arr)))])
 
-    arr = add_columns(arr, [("idx", np.arange(len(arr)))])
-    logger.info("Found {} sources".format(len(arr)))
-    return arr
+    flt = (indexed["ra_k"] != -9999.0)
+    filtered = indexed[flt]
+
+    logger.info("Found {}/{} valid sources".format(len(filtered), len(arr)))
+    return filtered
 
 
 def match(bm0_ra, bm0_dec, bm1_ra, bm1_dec, radius=DEFAULT_RADIUS):
