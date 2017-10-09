@@ -94,7 +94,6 @@ def read_bm(fp, band="k", **kwargs):
     kwargs.setdefault("skip_header", EPOCHS)
     kwargs.setdefault("usecols", USECOLS)
 
-
     arr = np.genfromtxt(fp, **kwargs)
     if arr.ndim == 0:
         arr = arr.flatten()
