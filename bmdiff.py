@@ -87,13 +87,15 @@ def add_columns(arr, extra_cols, append=False):
     return data
 
 
-def read_bm(fp, band="k"):
+def read_bm(fp, band="k", **kwargs):
     logger.info("- Reading {}...".format(fp))
 
-    arr = np.genfromtxt(
-        fp, skip_header=EPOCHS,
-        dtype=SOURCE_DTYPE,
-        usecols=USECOLS)
+    kwargs.setdefault("dtype", SOURCE_DTYPE)
+    kwargs.setdefault("skip_header", EPOCHS)
+    kwargs.setdefault("usecols", USECOLS)
+
+
+    arr = np.genfromtxt(fp, **kwargs)
     if arr.ndim == 0:
         arr = arr.flatten()
     indexed = add_columns(arr, [("idx", np.arange(len(arr)))])
