@@ -21,10 +21,9 @@ diff = bmdiff.difference(input, flt)
 import bmdiff
 
 bms = filters = [
-    bmdiff.read_bm(bm, band="k")
-    for bm in ("data/union0.dat",
-                "data/union1.dat",
-                "data/union2.dat")]
+    bmdiff.read_bm("data/union0.dat", band="k"),
+    bmdiff.read_bm("data/union1.dat", band="k"),
+    bmdiff.read_bm("data/union2.dat", band="k")]
 
 union = bmdiff.union(bms, band="k")
 
