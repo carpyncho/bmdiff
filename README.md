@@ -1,14 +1,7 @@
-# Band-Merge Diff
+# Band-Merge Diff and Union
 Differences between band merges
 
-## Ussage
-
-```bash
-python bmdiff.py input.dat --filters flt0.dat flt1.dat -o out.txt
-
-```
-
-### From script
+### Difference
 
 ```python
 import bmdiff
@@ -19,5 +12,20 @@ flt = [
     bmdiff.read_bm("flt1.dat")]
 
 diff = bmdiff.difference(input, flt)
+
+```
+
+### Union
+
+```python
+import bmdiff
+
+bms = filters = [
+    bmdiff.read_bm(flt, band="k")
+    for flt in ("data/union0.dat",
+                "data/union1.dat",
+                "data/union2.dat")]
+
+union = bmdiff.union(bms, band="k")
 
 ```
