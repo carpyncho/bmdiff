@@ -8,9 +8,9 @@ from __future__ import print_function
 # DOCS
 # =============================================================================
 
-__doc__ = """Make a difference between two band merges"""
+__doc__ = """Make band merges difference and union."""
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 # =============================================================================
@@ -147,68 +147,4 @@ def difference(ibm, flts, radius=DEFAULT_RADIUS, band="k"):
     return ibm[clean_mask]
 
 
-# =============================================================================
-# MAIN
-# =============================================================================
-
-def _get_parser():
-    parser = argparse.ArgumentParser(
-        description=DOC, version=VERSION, epilog=EPILOG)
-
-    parser.add_argument(
-        'input', action='store', metavar="BAND-MERGE", help='Band-Merge file')
-
-    parser.add_argument(
-        '--filters', "-f", dest="filters", action='store', required=True,
-        metavar="BAND-MERGE", nargs="+", help=(
-            'Band-Merge file with the list of sources '
-            'to be removed from input'))
-
-    parser.add_argument(
-        "--band", "-b", dest="band", action="store",
-        default="k", choices="hjk", help="Radious to make the crossmatch")
-    parser.add_argument(
-        "--radius", "-r", dest="radius", action="store",
-        default=DEFAULT_RADIUS, type=float,
-        help="Radious to make the crossmatch")
-
-    parser.add_argument(
-        '--output', '-o', dest='output', action='store',
-        type=argparse.FileType('w'), metavar="PATH", required=True,
-        help='Destination of your difference')
-
-    parser.add_argument(
-        '--quiet', '-q', dest='loglevel', action='store_const',
-        const=logging.WARNING, default=logging.INFO,
-        help='Set log-level to warning')
-
-    return parser
-
-
-def _main(argv):
-
-    # parse the arguments
-    parser = _get_parser()
-    args = parser.parse_args(argv)
-
-    # extract and post-process the input data
-    logger.setLevel(args.loglevel)
-
-    # read the input
-    logger.info("[INPUT]")
-    inputbm = read_bm(args.input, args.band)
-
-    logger.info("[FILTERS]")
-    filters = [read_bm(flt, band=args.band) for flt in args.filters]
-
-    # make difference
-    diff = difference(inputbm, filters, radius=args.radius, band=args.band)
-
-    # writing output
-    logger.info("[OUTPUT]")
-    logger.info("- Wrinting '{}'...".format(args.output.name))
-    np.savetxt(args.output, diff, fmt=FORMATS)
-
-
-if __name__ == "__main__":
-    _main(sys.argv[1:])
+#~ def union(bms, radius=DEFAULT_RADIUS, band="k"):
