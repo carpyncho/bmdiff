@@ -1,5 +1,14 @@
-import bmdiff
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+
 import numpy as np
+
+import bmdiff
+
+bmdiff.logger.setLevel(logging.INFO)
+
 
 print("TESTING DIFFERENCE")
 inputbm = bmdiff.read_bm("data/ibm.dat", "k")
@@ -18,7 +27,9 @@ print("TESTING UNION")
 bms = filters = [
     bmdiff.read_bm(flt, band="k")
     for flt in ("data/union0.dat", "data/union1.dat", "data/union2.dat")]
+expected = np.loadtxt("data/union.dat")
 
-
-
-#~ python bmdiff.py  --filters  -o out.txt
+union = bmdiff.union(bms, band="k")
+for de, ee in zip(union, expected):
+    np.testing.assert_array_equal(
+        np.asarray(de.tolist()), ee)

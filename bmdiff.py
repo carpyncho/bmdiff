@@ -147,4 +147,22 @@ def difference(ibm, flts, radius=DEFAULT_RADIUS, band="k"):
     return ibm[clean_mask]
 
 
-#~ def union(bms, radius=DEFAULT_RADIUS, band="k"):
+def union(bms, radius=DEFAULT_RADIUS, band="k"):
+    ra, dec = "ra_{}".format(band), "dec_{}".format(band)
+    united = None
+    for idx, bm in enumerate(bms):
+        bm_idx = np.zeros(len(bm), dtype=int) + idx
+        bm = add_columns(bm, [("bm_idx", bm_idx)])
+        if united is None:
+            united = bm
+        else:
+            matches = np.fromiter(
+                match(united[ra], united[dec], bm[ra], bm[dec], radius=radius),
+                dtype=[("idx_united", int), ("idx_bm", int)])
+            logger.info("Found {} sources matches".format(matches.size))
+            logger.info("Filtering...")
+
+            clean_mask = ~np.in1d(bm["idx"], matches["idx_bm"])
+            united = np.append(united, bm[clean_mask])
+
+    return united
