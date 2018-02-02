@@ -32,7 +32,6 @@ def test_union():
     expected = np.loadtxt("data/union.dat")
 
     union = bmdiff.union(bms, band="k")
-    import ipdb; ipdb.set_trace()
     for de, ee in zip(union, expected):
         np.testing.assert_array_equal(
             np.asarray(de.tolist()), ee)

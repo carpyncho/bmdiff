@@ -151,7 +151,9 @@ def union(bms, radius=DEFAULT_RADIUS, band="k"):
     ra, dec = "ra_{}".format(band), "dec_{}".format(band)
     united = None
     for idx, bm in enumerate(bms):
-        bm_idx = np.zeros(len(bm), dtype=int) + idx
+        bm_len = len(bm)
+
+        bm_idx = np.zeros(bm_len, dtype=int) + idx
         bm = add_columns(bm, [("bm_idx", bm_idx)])
         if united is None:
             united = bm
@@ -162,7 +164,7 @@ def union(bms, radius=DEFAULT_RADIUS, band="k"):
             logger.info("Found {} sources matches".format(matches.size))
             logger.info("Filtering...")
 
-            clean_mask = ~np.in1d(bm["idx"], matches["idx_bm"])
+            clean_mask = ~np.in1d(np.arange(bm_len), matches["idx_bm"])
             united = np.append(united, bm[clean_mask])
 
     return united
